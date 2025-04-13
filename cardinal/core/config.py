@@ -3,7 +3,7 @@ Configuration management for Cardinal core.
 """
 
 import os
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from typing import Optional
 from pathlib import Path
 

@@ -1,0 +1,23 @@
+services:
+  cardinal:
+    build:
+      context: ./cardinal
+    ports:
+      - "8081:80"
+    volumes:
+      - ./cardinal:/code
+      - ./logs:/code/logs
+    networks:
+      - mynetwork
+    user: root
+
+  swagger-editor:
+    image: swaggerapi/swagger-editor
+    ports:
+      - "8082:8080"
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge

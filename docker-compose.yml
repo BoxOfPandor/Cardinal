@@ -7,6 +7,8 @@ services:
     volumes:
       - ./cardinal:/code
       - ./logs:/code/logs
+    env_file:
+      - ./cardinal/.env
     networks:
       - mynetwork
     user: root

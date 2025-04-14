@@ -1,65 +1,65 @@
 # Cardinal
 
-Cardinal est une API flexible et extensible développée en Python avec FastAPI, permettant d'ajouter, modifier ou supprimer dynamiquement des endpoints API grâce à un système de modules.
+Cardinal is a flexible and extensible API developed in Python with FastAPI, allowing dynamic addition, modification, or deletion of API endpoints through a module system.
 
 ## 🌟 Vision
 
-Créer une API modulaire en développement continu où il suffit d'ajouter des fichiers Python pour étendre automatiquement les fonctionnalités, sans interruption de service ni modification du code existant.
+Create a modular API in continuous development where you only need to add Python files to automatically extend functionality, without service interruption or modification of existing code.
 
-## 🔑 Caractéristiques principales
+## 🔑 Key Features
 
-- **Architecture modulaire**: Ajout facile de nouvelles fonctionnalités via des modules indépendants
-- **Découverte automatique**: Le core détecte et intègre automatiquement les nouveaux modules
-- **Développement continu**: Ajoutez des API à l'infini sans toucher au code existant
-- **Documentation auto-générée**: Interface Swagger générée automatiquement pour tous les modules
-- **Isolation des modules**: Chaque module peut évoluer indépendamment
+- **Modular architecture**: Easy addition of new functionalities via independent modules
+- **Automatic discovery**: The core automatically detects and integrates new modules
+- **Continuous development**: Add APIs infinitely without touching existing code
+- **Auto-generated documentation**: Automatically generated Swagger interface for all modules
+- **Module isolation**: Each module can evolve independently
 
 ## 🏗️ Architecture
 
-Cardinal se compose de deux éléments principaux:
+Cardinal consists of two main components:
 
 ### Core
-Le noyau de l'application qui fournit:
-- Détection et chargement automatique des modules
-- Routage des requêtes vers les modules appropriés
-- Gestion des erreurs et logging centralisés
-- Configuration globale
+The application kernel that provides:
+- Automatic module detection and loading
+- Request routing to appropriate modules
+- Centralized error handling and logging
+- Global configuration
 
 ### Modules
-Des composants indépendants qui:
-- S'enregistrent automatiquement auprès du core
-- Définissent leurs propres endpoints API
-- Implémentent leur logique métier spécifique
-- Peuvent être ajoutés/modifiés/supprimés à la volée
+Independent components that:
+- Register automatically with the core
+- Define their own API endpoints
+- Implement their specific business logic
+- Can be added/modified/deleted on the fly
 
 ## 🚀 Installation
 
 ```bash
-# Cloner le dépôt
+# Clone the repository
 git clone https://github.com/username/cardinal.git
 cd cardinal
 
-# Créer un environnement virtuel
+# Create a virtual environment
 python -m venv venv
-source venv/bin/activate  # Sur Windows: venv\Scripts\activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Installer les dépendances
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-## ✨ Création d'un nouveau module
+## ✨ Creating a New Module
 
-1. Créez un nouveau dossier dans `modules/` (par exemple `modules/my_module/`)
-2. Ajoutez les fichiers nécessaires:
-   - `__init__.py` - Pour l'auto-découverte
-   - `routes.py` - Pour définir vos endpoints
-   - `models.py` - Pour les modèles de données Pydantic
-   - `services.py` - Pour la logique métier
+1. Create a new folder in `modules/` (e.g., `modules/my_module/`)
+2. Add the necessary files:
+   - `__init__.py` - For auto-discovery
+   - `routes.py` - To define your endpoints
+   - `models.py` - For Pydantic data models
+   - `services.py` - For business logic
 
-Exemple de structure d'un module:
+Example module structure:
 ```python
 # modules/my_module/__init__.py
-from .routes import router  # Pour que le module_loader trouve le router
+from .routes import router  # For module_loader to find the router
 
 # modules/my_module/routes.py
 from fastapi import APIRouter
@@ -71,28 +71,28 @@ async def read_root():
     return {"message": "Hello from my module!"}
 ```
 
-Le core détectera automatiquement votre module et ajoutera ses routes à l'API!
+The core will automatically detect your module and add its routes to the API!
 
 ## 🧪 Tests
 
 ```bash
-# Exécuter les tests
+# Run tests
 pytest
 ```
 
 ## 📘 Documentation
 
-La documentation complète est générée automatiquement et accessible à:
+Complete documentation is automatically generated and accessible at:
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
-## 🔄 Développement continu
+## 🔄 Continuous Development
 
-Cardinal est conçu pour un développement continu:
-- Ajoutez de nouveaux modules à tout moment
-- Modifiez les modules existants
-- Le core se charge de les intégrer sans redémarrage
+Cardinal is designed for continuous development:
+- Add new modules at any time
+- Modify existing modules
+- The core takes care of integrating them without requiring restart
 
-## 📄 Licence
+## 📄 License
 
-Ce projet est sous licence [MIT](LICENSE)
+This project is licensed under the [MIT](LICENSE) license

@@ -39,12 +39,50 @@ def create_app(config: CoreConfig = None) -> FastAPI:
     @main_router.get("/health", tags=["System"])
     async def health_check():
         return {"status": "healthy", "version": config.version}
+    
+    # Create and setup module loader
+    module_loader = ModuleLoader(app, config.modules_path)
+
+    # Add modules info endpoint
+    @main_router.get("/modules", tags=["System"])
+    async def modules_info():
+        """Return information about all loaded modules."""
+        modules_data = []
+        
+        for module_name, module in module_loader.loaded_modules.items():
+            router = module_loader._get_module_router(module)
+            routes_count = 0
+            prefix = ""
+            
+            if router:
+                prefix = getattr(router, "prefix", "")
+                # Count routes associated with this router
+                for route in app.routes:
+                    if hasattr(route, "path") and route.path.startswith(prefix or "/"):
+                        if not prefix or (
+                            # Ensure we only count routes that belong to this router
+                            # and not routes that just happen to start with the same prefix
+                            prefix == "/" or 
+                            route.path == prefix or 
+                            route.path.startswith(f"{prefix}/")
+                        ):
+                            routes_count += 1
+            
+            # Get module description if available
+            description = getattr(module, "__doc__", "").strip() or "No description available"
+            
+            modules_data.append({
+                "name": module_name,
+                "route_prefix": prefix,
+                "routes_count": routes_count,
+                "description": description,
+                "is_active": True  # All loaded modules are active
+            })
+        
+        return {"modules": modules_data}
 
     # Include the main router
     app.include_router(main_router)
-
-    # Create and setup module loader
-    module_loader = ModuleLoader(app, config.modules_path)
 
     # Load initial modules
     module_loader.load_all_modules()

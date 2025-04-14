@@ -211,6 +211,7 @@ class ModuleLoader:
                 removed_modules = loaded_module_names - current_modules
                 
                 # Handle removed modules
+                schema_needs_update = False
                 for module_name in removed_modules:
                     logger.info(f"Module removed: {module_name}")
                     self._unregister_module_routes(module_name)
@@ -219,8 +220,14 @@ class ModuleLoader:
                         del self.loaded_modules[module_name]
                     if module_name in last_scan:
                         del last_scan[module_name]
+                    schema_needs_update = True
+    
+                # Update OpenAPI schema if modules were removed
+                if schema_needs_update:
+                    self._update_openapi_schema()
     
                 # Check each module directory for changes or new modules
+                changes_detected = False
                 for module_dir in self.modules_path.iterdir():
                     if not module_dir.is_dir() or not (module_dir / "__init__.py").exists():
                         continue
@@ -240,7 +247,12 @@ class ModuleLoader:
                     if module_name not in last_scan or latest_modification > last_scan[module_name]:
                         last_scan[module_name] = latest_modification
                         logger.info(f"Change detected in module: {module_name}")
-                        self.load_module(module_name)
+                        if self.load_module(module_name):
+                            changes_detected = True
+    
+                # Update OpenAPI schema if modules were added or changed
+                if changes_detected:
+                    self._update_openapi_schema()
     
                 # Sleep to prevent high CPU usage
                 await asyncio.sleep(2)
@@ -269,3 +281,21 @@ class ModuleLoader:
                     await self.watcher_task
                 except asyncio.CancelledError:
                     pass
+                    
+    def _update_openapi_schema(self) -> None:
+        """
+        Update the OpenAPI schema to reflect the current routes.
+        This forces the Swagger UI to refresh with the current API structure.
+        """
+        try:
+            # Regenerate the OpenAPI schema
+            if hasattr(self.app, "openapi_schema"):
+                # Clear the cached schema to force regeneration
+                self.app.openapi_schema = None
+                
+            # Trigger schema regeneration
+            _ = self.app.openapi()
+            
+            logger.info("OpenAPI schema updated")
+        except Exception as e:
+            logger.error(f"Error updating OpenAPI schema: {str(e)}")

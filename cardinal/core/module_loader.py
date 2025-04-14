@@ -200,17 +200,34 @@ class ModuleLoader:
         """
         last_scan = {}
         self.running = True
-
+    
         while self.running:
             try:
-                # Check each module directory for changes
+                # Get the current list of available modules
+                current_modules = set(self.discover_modules())
+                
+                # Check for removed modules
+                loaded_module_names = set(self.loaded_modules.keys())
+                removed_modules = loaded_module_names - current_modules
+                
+                # Handle removed modules
+                for module_name in removed_modules:
+                    logger.info(f"Module removed: {module_name}")
+                    self._unregister_module_routes(module_name)
+                    self._cleanup_module_from_sys(f"{self.modules_path.name}.{module_name}")
+                    if module_name in self.loaded_modules:
+                        del self.loaded_modules[module_name]
+                    if module_name in last_scan:
+                        del last_scan[module_name]
+    
+                # Check each module directory for changes or new modules
                 for module_dir in self.modules_path.iterdir():
                     if not module_dir.is_dir() or not (module_dir / "__init__.py").exists():
                         continue
-
+    
                     module_name = module_dir.name
                     latest_modification = 0
-
+    
                     # Find the newest modification time in the module directory
                     for root, _, files in os.walk(module_dir):
                         for file in files:
@@ -218,23 +235,16 @@ class ModuleLoader:
                                 file_path = os.path.join(root, file)
                                 mod_time = os.path.getmtime(file_path)
                                 latest_modification = max(latest_modification, mod_time)
-
+    
                     # If this is a new module or has been modified, reload it
                     if module_name not in last_scan or latest_modification > last_scan[module_name]:
                         last_scan[module_name] = latest_modification
                         logger.info(f"Change detected in module: {module_name}")
                         self.load_module(module_name)
-
-                # Check for new modules
-                modules = self.discover_modules()
-                new_modules = [m for m in modules if m not in self.loaded_modules]
-                for module_name in new_modules:
-                    logger.info(f"New module detected: {module_name}")
-                    self.load_module(module_name)
-
+    
                 # Sleep to prevent high CPU usage
                 await asyncio.sleep(2)
-
+    
             except Exception as e:
                 logger.error(f"Error in module watcher: {str(e)}")
                 await asyncio.sleep(5)  # Sleep longer on error
